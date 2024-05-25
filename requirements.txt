@@ -1,0 +1,8 @@
+torch
+torchvision
+torch_geometric
+plotly
+shapely
+matplotlib
+vscodedebugvisualizer
+opencv-python

@@ -7,10 +7,16 @@ import shapely.affinity
 from shapely import Polygon
 
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
 
 CURR_DIR = os.path.dirname(__file__)
 
+
+class EachData:
+    def __init__(self, parcel_img_tensor, building_img_tensor, vec) -> None:
+        self.parcel_img_tensor = parcel_img_tensor
+        self.building_img_tensor = building_img_tensor
+        self.vec = vec
 
 class PolygonDataset(Dataset):
     def __init__(self, num_samples, num_test_samples, img_size):
@@ -24,27 +30,16 @@ class PolygonDataset(Dataset):
             self.parcels_data_json = json.load(f)
 
         # 학습에 사용할 데이터
-        (
-            parcels_img_tensors,
-            buildings_img_tensors,
-            vecs
-        ) = self.make_datasets(0, self.num_samples + 41)  # FIXME: 41 개가 적합하지 않음. 기본 데이터를 수정
-        self.parcels_img_tensors = parcels_img_tensors
-        self.buildings_img_tensors = buildings_img_tensors
-        self.vecs = vecs
+        self.dataset = self.make_datasets(0, self.num_samples + 41)  # FIXME: 41 개가 적합하지 않음. 기본 데이터를 수정
 
         # 평가에 사용할 데이터
-        (
-            test_parcels_img_tensors,
-            test_buildings_img_tensors,
-            test_vecs
-        ) = self.make_datasets(self.num_samples + 41, self.num_samples + 41 + self.num_test_samples)
-        self.test_parcels_img_tensors = test_parcels_img_tensors
-        self.test_buildings_img_tensors = test_buildings_img_tensors
-        self.test_vecs = test_vecs
+        self.test_dataset = self.make_datasets(self.num_samples + 41, self.num_samples + 41 + self.num_test_samples)
 
     def __len__(self):
-        return self.num_samples
+        return self.dataset
+
+    def __getitem__(self, index) -> EachData:
+        return self.dataset[index]
 
     def get_vec(self, idx):
         return self.vecs[idx]
@@ -81,7 +76,6 @@ class PolygonDataset(Dataset):
 
 
     def make_datasets(self, start_index, end_index):
-        parcels_img_tensors, buildings_img_tensors, vecs = [], []
         for i in range(start_index, end_index):
             building_vertices = self.buildings_data_json["features"][i]["geometry"]["coordinates"][0]
             pnu = self.buildings_data_json["features"][i]["properties"]["A2"]
@@ -96,8 +90,6 @@ class PolygonDataset(Dataset):
                 building_img_tensor = self.make_each_img_tensor(building_vertices)
                 vec = None  # FIXME
 
-                parcels_img_tensors.append(parcel_img_tensor)
-                buildings_img_tensors.append(building_img_tensor)
-                vecs.append(vec)
+                each_data = EachData(parcel_img_tensor, building_img_tensor, vec)
 
-        return parcels_img_tensors, buildings_img_tensors, vecs
+        return each_data

@@ -1,8 +1,8 @@
-torch
-torchvision
-torch_geometric
-plotly
-shapely
-matplotlib
-vscodedebugvisualizer
-opencv-python
+torch==2.3.0
+torchvision==0.18.0
+torch_geometric==2.5.2
+opencv-python==4.9.0.80
+plotly==5.20.0
+shapely==2.0.3
+matplotlib==3.8.4
+vscodedebugvisualizer==0.1.0

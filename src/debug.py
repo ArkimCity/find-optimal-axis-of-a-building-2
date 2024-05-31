@@ -23,19 +23,3 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
         axes[row, col].axis('off')  # 축 레이블 제거
 
     plt.show()
-
-# def test():
-#     # 테스트
-#     result_vecs = []
-#     for test_data in dataset.test_parcel_img_tensor_dataset:
-#         result_vec = model(test_data.unsqueeze(0))
-#         result_vecs.append((float(result_vec[0][0]), float(result_vec[0][1])))
-
-#     with open('test_result.json', 'w', encoding="utf-8") as json_file:
-#         json.dump({
-#             "test_datsets": dataset.test_datasets,
-#             "test_vecs": dataset.test_vecs,
-#             "result_vecs": result_vecs,
-#         }, json_file, cls=EncodeTensor)
-
-#     visualize_polygon_dataset(dataset.test_datasets, result_vecs, dataset.test_vecs, num_images=num_test_samples)

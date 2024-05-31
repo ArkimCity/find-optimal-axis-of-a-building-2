@@ -15,6 +15,9 @@ import debugvisualizer as dv
 
 CURR_DIR = os.path.dirname(__file__)
 
+NUM_SAMPLES = 2048
+NUM_TEST_SAMPLES = 64
+IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
 if __name__ == "__main__":
     # CUDA, MPS, CPU 순으로 디바이스 사용 가능 여부 확인
@@ -34,11 +37,11 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 데이터셋 인스턴스 생성
-    num_samples = 2048
-    num_test_samples = 64
-    img_size = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
-    dataset = PolygonDataset(num_samples=num_samples, num_test_samples=num_test_samples, img_size=img_size)
-    batch_size = num_samples
+    NUM_SAMPLES = 2048
+    NUM_TEST_SAMPLES = 64
+    IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
+    dataset = PolygonDataset(num_samples=NUM_SAMPLES, num_test_samples=NUM_TEST_SAMPLES, img_size=IMG_SIZE)
+    batch_size = NUM_SAMPLES
     batch_counts = 1
 
     # 데이터 및 라벨 불러오기

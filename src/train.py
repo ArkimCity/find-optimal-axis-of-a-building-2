@@ -1,22 +1,33 @@
-import json
+import os
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from model import CNN
-from model import EncodeTensor
 from polygon_dataset import PolygonDataset
-from debug import visualize_polygon_dataset
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+
 import debugvisualizer as dv
+
+CURR_DIR = os.path.dirname(__file__)
 
 
 if __name__ == "__main__":
-    # 모델 초기화
-    model = CNN()
+    # CUDA, MPS, CPU 순으로 디바이스 사용 가능 여부 확인
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+    print(f"Using device: {device}")
+
+    # 모델 초기화 및 선택된 디바이스로 이동
+    model = CNN().to(device)
 
     # 손실 함수 및 옵티마이저 정의
     criterion = nn.MSELoss()  # 회귀 문제 사용할 손실 함수
@@ -33,7 +44,7 @@ if __name__ == "__main__":
     # 데이터 및 라벨 불러오기
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     all_labels = [
-        torch.tensor([dataset.get_vec(i * batch_size + j) for j in range(batch_size)]) for i in range(batch_counts)
+        torch.tensor([dataset.get_vec(i * batch_size + j) for j in range(batch_size)]).to(device) for i in range(batch_counts)
     ]  # FIXME: dataloader 자체에 적용
 
     fig, ax = plt.subplots()
@@ -46,13 +57,13 @@ if __name__ == "__main__":
 
     def init():
         ax.set_xlim(0, num_epochs)
-        ax.set_ylim(0, 5)  # 손실의 예상 범위를 설정, 필요에 따라 조정하세요
+        ax.set_ylim(0, 5)  # 손실의 예상 범위를 설정
         return line,
 
     def update(epoch):
         running_loss = 0.0
         for i, data in enumerate(dataloader, 0):
-            inputs = data
+            inputs = data.to(device)
             optimizer.zero_grad()
 
             outputs = model(inputs)
@@ -79,21 +90,7 @@ if __name__ == "__main__":
 
     print('Finished Training')
 
-    # FIXME: save model
-
-
-def test():
-    # 테스트
-    result_vecs = []
-    for test_data in dataset.test_parcel_img_tensor_dataset:
-        result_vec = model(test_data.unsqueeze(0))
-        result_vecs.append((float(result_vec[0][0]), float(result_vec[0][1])))
-
-    with open('test_result.json', 'w', encoding="utf-8") as json_file:
-        json.dump({
-            "test_datsets": dataset.test_datasets,
-            "test_vecs": dataset.test_vecs,
-            "result_vecs": result_vecs,
-        }, json_file, cls=EncodeTensor)
-
-    visualize_polygon_dataset(dataset.test_datasets, result_vecs, dataset.test_vecs, num_images=num_test_samples)
+    # Save the model
+    model_save_path = os.path.join(CURR_DIR, '..', 'models/trained_model.pth')
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}')

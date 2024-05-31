@@ -2,7 +2,7 @@ from json import JSONEncoder
 
 import torch
 import torch.nn as nn
-from torch.utils.data import  Dataset
+from torch.utils.data import Dataset
 
 
 class EncodeTensor(JSONEncoder, Dataset):

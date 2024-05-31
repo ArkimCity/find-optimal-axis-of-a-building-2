@@ -6,3 +6,4 @@ plotly==5.20.0
 shapely==2.0.3
 matplotlib==3.8.4
 vscodedebugvisualizer==0.1.0
+black

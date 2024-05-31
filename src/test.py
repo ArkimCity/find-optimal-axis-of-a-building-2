@@ -21,18 +21,25 @@ if __name__ == "__main__":
     model = CNN()
     model.load_state_dict(torch.load(MODEL_PATH))
 
-    num_test_samples = 32
-
     result_vecs = []
     for test_data in dataset.test_parcel_img_tensor_dataset:
         result_vec = model(test_data.unsqueeze(0))
         result_vecs.append((float(result_vec[0][0]), float(result_vec[0][1])))
 
-    with open('test_result.json', 'w', encoding="utf-8") as json_file:
-        json.dump({
-            "test_datsets": dataset.test_parcel_img_tensor_dataset,
-            "test_vecs": dataset.test_vec_dataset,
-            "result_vecs": result_vecs,
-        }, json_file, cls=EncodeTensor)
+    with open("test_result.json", "w", encoding="utf-8") as json_file:
+        json.dump(
+            {
+                "test_datsets": dataset.test_parcel_img_tensor_dataset,
+                "test_vecs": dataset.test_vec_dataset,
+                "result_vecs": result_vecs,
+            },
+            json_file,
+            cls=EncodeTensor,
+        )
 
-    visualize_polygon_dataset(dataset.test_parcel_img_tensor_dataset, result_vecs, dataset.test_vec_dataset, num_images=num_test_samples)
+    visualize_polygon_dataset(
+        dataset.test_parcel_img_tensor_dataset,
+        result_vecs,
+        dataset.test_vec_dataset,
+        num_images=32,
+    )

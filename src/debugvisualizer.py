@@ -2,6 +2,7 @@
 이 특정 파일명의 파이썬 파일이 root dir에 있어야 debuging시 import 되는 듯 함.
 https://gitlab.com/fehrlich/vscode-debug-visualizer-py
 """
+
 import json
 from enum import Enum
 from typing import Any, List, Tuple
@@ -193,10 +194,28 @@ def plot_floor_object(fig, floor_obj: Any, num_floors: int, idx: int) -> None:
             continue
 
         col = i + 1
-        plot_draw_item(fig, 1, col, draw_items[0], COLORS[idx % len(COLORS)], legendgroup, name, showlegend)
+        plot_draw_item(
+            fig,
+            1,
+            col,
+            draw_items[0],
+            COLORS[idx % len(COLORS)],
+            legendgroup,
+            name,
+            showlegend,
+        )
         showlegend = False
         for draw_item in draw_items[1:]:
-            plot_draw_item(fig, 1, col, draw_item, COLORS[idx % len(COLORS)], legendgroup, name, showlegend)
+            plot_draw_item(
+                fig,
+                1,
+                col,
+                draw_item,
+                COLORS[idx % len(COLORS)],
+                legendgroup,
+                name,
+                showlegend,
+            )
 
 
 def plot(*obj_list: List[Any]) -> str:
@@ -215,7 +234,9 @@ def plot(*obj_list: List[Any]) -> str:
     return fig_to_json(fig)
 
 
-def plot_floors(*floor_obj_list: List[Any], floor: int = -1, save_name="dv.html") -> str:
+def plot_floors(
+    *floor_obj_list: List[Any], floor: int = -1, save_name="dv.html"
+) -> str:
     """층 마다 있는 물체들를 각가의 subfigure에 그려준다.
 
     Example:
@@ -247,7 +268,9 @@ class Plot:
 
 
 class PlotFloors:
-    def __init__(self, *floor_obj_list: List[Any], floor: int = -1, save_name="dv.html") -> None:
+    def __init__(
+        self, *floor_obj_list: List[Any], floor: int = -1, save_name="dv.html"
+    ) -> None:
         self.json_str = plot_floors(*floor_obj_list, floor=floor, save_name=save_name)
 
 

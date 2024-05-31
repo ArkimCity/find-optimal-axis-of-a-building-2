@@ -25,18 +25,45 @@ class PolygonDataset(Dataset):
         self.num_test_samples = num_test_samples
         self.img_size = img_size
 
-        with open(os.path.join(CURR_DIR, "..", "data/buildings_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json"), "r") as f:
+        with open(
+            os.path.join(
+                CURR_DIR,
+                "..",
+                "data/buildings_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json",
+            ),
+            "r",
+        ) as f:
             self.buildings_data_json: dict = json.load(f)
-        with open(os.path.join(CURR_DIR, "..", "data/parcels_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json"), "r") as f:
+        with open(
+            os.path.join(
+                CURR_DIR,
+                "..",
+                "data/parcels_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json",
+            ),
+            "r",
+        ) as f:
             self.parcels_data_json: dict = json.load(f)
 
         buffer_num = 2217  # FIXME:
 
         # 학습에 사용할 데이터
-        self.parcel_img_tensor_dataset, self.building_img_tensor_dataset, self.vec_dataset = self.make_datasets(0, self.num_samples + buffer_num)  # FIXME: 41 개가 적합하지 않음. 기본 데이터를 수정
+        (
+            self.parcel_img_tensor_dataset,
+            self.building_img_tensor_dataset,
+            self.vec_dataset,
+        ) = self.make_datasets(
+            0, self.num_samples + buffer_num
+        )  # FIXME: 41 개가 적합하지 않음. 기본 데이터를 수정
 
         # 평가에 사용할 데이터
-        self.test_parcel_img_tensor_dataset, self.test_building_img_tensor_dataset, self.test_vec_dataset  = self.make_datasets(self.num_samples + buffer_num, self.num_samples + buffer_num + self.num_test_samples)
+        (
+            self.test_parcel_img_tensor_dataset,
+            self.test_building_img_tensor_dataset,
+            self.test_vec_dataset,
+        ) = self.make_datasets(
+            self.num_samples + buffer_num,
+            self.num_samples + buffer_num + self.num_test_samples,
+        )
 
     def __len__(self):
         return len(self.parcel_img_tensor_dataset)
@@ -63,7 +90,11 @@ class PolygonDataset(Dataset):
         # input 점들을 img_size 크기에 맞게 변환 준비
         vertices_normalized = self.normalize_coordinates(vertices_raw)
         polygon_normalized = Polygon(vertices_normalized)
-        polygon_translated = shapely.affinity.translate(polygon_normalized, -polygon_normalized.bounds[0] + 0.1, -polygon_normalized.bounds[1] + 0.1)
+        polygon_translated = shapely.affinity.translate(
+            polygon_normalized,
+            -polygon_normalized.bounds[0] + 0.1,
+            -polygon_normalized.bounds[1] + 0.1,
+        )
         vertices_translated = np.array(polygon_translated.exterior.coords)
 
         img = np.zeros((self.img_size, self.img_size))
@@ -80,10 +111,17 @@ class PolygonDataset(Dataset):
     def get_label_vector(self, vertices_raw):
         vertices_normalized = self.normalize_coordinates(vertices_raw)
         polygon_normalized = Polygon(vertices_normalized)
-        polygon_translated = shapely.affinity.translate(polygon_normalized, -polygon_normalized.bounds[0] + 0.1, -polygon_normalized.bounds[1] + 0.1)
+        polygon_translated = shapely.affinity.translate(
+            polygon_normalized,
+            -polygon_normalized.bounds[0] + 0.1,
+            -polygon_normalized.bounds[1] + 0.1,
+        )
 
         coords = polygon_translated.minimum_rotated_rectangle.exterior.coords
-        vecs = [(coords[i + 1][0] - coord[0], coords[i + 1][1] - coord[1]) for i, coord in enumerate(coords[:-1])]
+        vecs = [
+            (coords[i + 1][0] - coord[0], coords[i + 1][1] - coord[1])
+            for i, coord in enumerate(coords[:-1])
+        ]
         vec_raw = [vec for vec in vecs if vec[0] >= 0 and vec[1] > 0][0]
         vec = vec_raw
 
@@ -94,10 +132,16 @@ class PolygonDataset(Dataset):
         building_img_tensor_dataset = []
         labels = []
         for i in range(start_index, end_index):
-            parcel_vertices = self.parcels_data_json["features"][i]["geometry"]["coordinates"][0]
+            parcel_vertices = self.parcels_data_json["features"][i]["geometry"][
+                "coordinates"
+            ][0]
             pnu = self.parcels_data_json["features"][i]["properties"]["A1"]
 
-            matching_buildings = [parcel for parcel in self.buildings_data_json["features"] if parcel["properties"]["A2"] == pnu]
+            matching_buildings = [
+                parcel
+                for parcel in self.buildings_data_json["features"]
+                if parcel["properties"]["A2"] == pnu
+            ]
 
             if len(matching_buildings) > 0:
                 matching_building = matching_buildings[0]

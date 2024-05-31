@@ -37,20 +37,25 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 데이터셋 인스턴스 생성
-    dataset = PolygonDataset(num_samples=NUM_SAMPLES, num_test_samples=NUM_TEST_SAMPLES, img_size=IMG_SIZE)
+    dataset = PolygonDataset(
+        num_samples=NUM_SAMPLES, num_test_samples=NUM_TEST_SAMPLES, img_size=IMG_SIZE
+    )
     batch_size = NUM_SAMPLES
     batch_counts = 1
 
     # 데이터 및 라벨 불러오기
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     all_labels = [
-        torch.tensor([dataset.get_vec(i * batch_size + j) for j in range(batch_size)]).to(device) for i in range(batch_counts)
+        torch.tensor(
+            [dataset.get_vec(i * batch_size + j) for j in range(batch_size)]
+        ).to(device)
+        for i in range(batch_counts)
     ]  # FIXME: dataloader 자체에 적용
 
     fig, ax = plt.subplots()
-    ax.set_xlabel('Epoch')
-    ax.set_ylabel('Loss')
-    line, = ax.plot([], [], color='blue')  # 초기 라인 객체 생성
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss")
+    (line,) = ax.plot([], [], color="blue")  # 초기 라인 객체 생성
 
     num_epochs = 2000
     losses = []
@@ -58,7 +63,7 @@ if __name__ == "__main__":
     def init():
         ax.set_xlim(0, num_epochs)
         ax.set_ylim(0, 5)  # 손실의 예상 범위를 설정
-        return line,
+        return (line,)
 
     def update(epoch):
         running_loss = 0.0
@@ -79,18 +84,26 @@ if __name__ == "__main__":
         losses.append(epoch_loss)
         line.set_data(range(len(losses)), losses)
 
-        if (epoch+1) % 100 == 0:
-            print('[%d] loss: %.3f' % (epoch + 1, epoch_loss))
+        if (epoch + 1) % 100 == 0:
+            print("[%d] loss: %.3f" % (epoch + 1, epoch_loss))
 
-        return line,
+        return (line,)
 
-    ani = animation.FuncAnimation(fig, update, frames=num_epochs, init_func=init, blit=True, interval=50, repeat=False)
+    ani = animation.FuncAnimation(
+        fig,
+        update,
+        frames=num_epochs,
+        init_func=init,
+        blit=True,
+        interval=50,
+        repeat=False,
+    )
 
     plt.show()
 
-    print('Finished Training')
+    print("Finished Training")
 
     # Save the model
-    model_save_path = os.path.join(CURR_DIR, '..', 'models/trained_model.pth')
+    model_save_path = os.path.join(CURR_DIR, "..", "models/trained_model.pth")
     torch.save(model.state_dict(), model_save_path)
-    print(f'Model saved to {model_save_path}')
+    print(f"Model saved to {model_save_path}")

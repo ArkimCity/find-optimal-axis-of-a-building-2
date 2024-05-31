@@ -77,14 +77,14 @@ if __name__ == "__main__":
 
         epoch_loss = running_loss / 100
         losses.append(epoch_loss)
-        line.set_data(range(epoch+1), losses)
+        line.set_data(range(len(losses)), losses)
 
         if (epoch+1) % 100 == 0:
             print('[%d] loss: %.3f' % (epoch + 1, epoch_loss))
 
         return line,
 
-    ani = animation.FuncAnimation(fig, update, frames=num_epochs, init_func=init, blit=True, interval=50)
+    ani = animation.FuncAnimation(fig, update, frames=num_epochs, init_func=init, blit=True, interval=50, repeat=False)
 
     plt.show()
 

@@ -17,6 +17,11 @@ PARCELS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", PARCELS_DATA_FILE_
 BUILDINGS_DATA_FILE_NAME = "AL_11_D010_20230506.json"
 BUILDINGS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME)
 
+PARCELS_DATA_FILE_NAME_FOR_TEST = "parcels_data_for_test.json"
+PARCELS_DATA_FILE_PATH_FOR_TEST = os.path.join(CURR_DIR, "..", "data", PARCELS_DATA_FILE_NAME_FOR_TEST)
+BUILDINGS_DATA_FILE_NAME_FOR_TEST = "buildings_data_for_test.json"
+BUILDINGS_DATA_FILE_PATH_FOR_TEST = os.path.join(CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME_FOR_TEST)
+
 
 class EachData:
     def __init__(self, parcel_img_tensor, building_img_tensor, vec) -> None:
@@ -26,17 +31,17 @@ class EachData:
 
 
 class PolygonDataset(Dataset):
-    def __init__(self, num_samples, num_test_samples, img_size):
+    def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
         self.num_samples = num_samples
         self.num_test_samples = num_test_samples
         self.img_size = img_size
 
-        print("loading buildings data ...")
-        with open(BUILDINGS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
-            self.buildings_data_json = json.load(f)
         print("loading parcels data ...")
-        with open(PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+        with open(PARCELS_DATA_FILE_PATH_FOR_TEST if is_test else PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
             self.parcels_data_json = json.load(f)
+        print("loading buildings data ...")
+        with open(BUILDINGS_DATA_FILE_PATH_FOR_TEST if is_test else BUILDINGS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+            self.buildings_data_json = json.load(f)
         print("loading data done")
 
         # 필지의 pnu를 기준으로 building 을 조회할 예정이기 때문에 미리 index 생성
@@ -161,7 +166,7 @@ class PolygonDataset(Dataset):
 
 if __name__ == "__main__":
     # 데이터 체크
-    dataset_test = PolygonDataset(2048, 128, 32)
+    dataset_test = PolygonDataset(2048, 128, 32, is_test=True)
     assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.building_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.vec_dataset)

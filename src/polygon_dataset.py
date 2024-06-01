@@ -2,14 +2,20 @@ import os
 import json
 import cv2
 import numpy as np
+import requests
 
 import shapely.affinity
 from shapely.geometry import Polygon
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 CURR_DIR = os.path.dirname(__file__)
+
+PARCELS_DATA_FILE_NAME = "AL_11_D002_20230506.json"
+PARCELS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", PARCELS_DATA_FILE_NAME)
+BUILDINGS_DATA_FILE_NAME = "AL_11_D010_20230506.json"
+BUILDINGS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME)
 
 
 class EachData:
@@ -25,45 +31,33 @@ class PolygonDataset(Dataset):
         self.num_test_samples = num_test_samples
         self.img_size = img_size
 
-        with open(
-            os.path.join(
-                CURR_DIR,
-                "..",
-                "data/buildings_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json",
-            ),
-            "r",
-        ) as f:
-            self.buildings_data_json: dict = json.load(f)
-        with open(
-            os.path.join(
-                CURR_DIR,
-                "..",
-                "data/parcels_data_divided/196164.22754000025_449303.8666800002_196905.28352000023_451480.8424600002.json",
-            ),
-            "r",
-        ) as f:
-            self.parcels_data_json: dict = json.load(f)
+        print("loading buildings data ...")
+        with open(BUILDINGS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+            self.buildings_data_json = json.load(f)
+        print("loading parcels data ...")
+        with open(PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+            self.parcels_data_json = json.load(f)
+        print("loading data done")
 
-        buffer_num = 2217  # FIXME:
+        # 필지의 pnu를 기준으로 building 을 조회할 예정이기 때문에 미리 index 생성
+        print("making buildings data index ...")
+        self.buildings_data_index = self.make_buildings_data_index()
+
+        print("making train dataset ...")
+        (
+            all_parcel_img_tensor_dataset,
+            all_building_img_tensor_dataset,
+            all_vec_dataset,
+        ) = self.make_datasets(self.num_samples + self.num_test_samples)
 
         # 학습에 사용할 데이터
-        (
-            self.parcel_img_tensor_dataset,
-            self.building_img_tensor_dataset,
-            self.vec_dataset,
-        ) = self.make_datasets(
-            0, self.num_samples + buffer_num
-        )  # FIXME: 41 개가 적합하지 않음. 기본 데이터를 수정
-
+        self.parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[:self.num_samples]
+        self.building_img_tensor_dataset = all_building_img_tensor_dataset[:self.num_samples]
+        self.vec_dataset = all_vec_dataset[:self.num_samples]
         # 평가에 사용할 데이터
-        (
-            self.test_parcel_img_tensor_dataset,
-            self.test_building_img_tensor_dataset,
-            self.test_vec_dataset,
-        ) = self.make_datasets(
-            self.num_samples + buffer_num,
-            self.num_samples + buffer_num + self.num_test_samples,
-        )
+        self.test_parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[self.num_samples:]
+        self.test_building_img_tensor_dataset = all_building_img_tensor_dataset[self.num_samples:]
+        self.test_vec_dataset = all_vec_dataset[self.num_samples:]
 
     def __len__(self):
         return len(self.parcel_img_tensor_dataset)
@@ -127,21 +121,25 @@ class PolygonDataset(Dataset):
 
         return vec
 
-    def make_datasets(self, start_index, end_index):
+    def make_buildings_data_index(self):
+        buildings_index = {}
+        for building in self.buildings_data_json["features"]:
+            a2 = building["properties"]["A2"]
+            if a2 not in buildings_index:
+                buildings_index[a2] = []
+            buildings_index[a2].append(building)
+        return buildings_index
+
+    def make_datasets(self, needed_num_samples):
         parcel_img_tensor_dataset = []
         building_img_tensor_dataset = []
         labels = []
-        for i in range(start_index, end_index):
-            parcel_vertices = self.parcels_data_json["features"][i]["geometry"][
-                "coordinates"
-            ][0]
-            pnu = self.parcels_data_json["features"][i]["properties"]["A1"]
+        checking_index = 0
+        while len(parcel_img_tensor_dataset) < needed_num_samples:
+            parcel_vertices = self.parcels_data_json["features"][checking_index]["geometry"]["coordinates"][0]
+            pnu = self.parcels_data_json["features"][checking_index]["properties"]["A1"]
 
-            matching_buildings = [
-                parcel
-                for parcel in self.buildings_data_json["features"]
-                if parcel["properties"]["A2"] == pnu
-            ]
+            matching_buildings = self.buildings_data_index.get(pnu, [])
 
             if len(matching_buildings) > 0:
                 matching_building = matching_buildings[0]
@@ -155,4 +153,19 @@ class PolygonDataset(Dataset):
                 building_img_tensor_dataset.append(building_img_tensor)
                 labels.append(vec)
 
+            checking_index += 1
+
+
         return parcel_img_tensor_dataset, building_img_tensor_dataset, labels
+
+
+if __name__ == "__main__":
+    # 데이터 체크
+    dataset_test = PolygonDataset(2048, 128, 32)
+    assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)
+    assert dataset_test.num_samples == len(dataset_test.building_img_tensor_dataset)
+    assert dataset_test.num_samples == len(dataset_test.vec_dataset)
+
+    assert dataset_test.num_test_samples == len(dataset_test.test_parcel_img_tensor_dataset)
+    assert dataset_test.num_test_samples == len(dataset_test.test_building_img_tensor_dataset)
+    assert dataset_test.num_test_samples == len(dataset_test.test_vec_dataset)

@@ -15,7 +15,7 @@ import debugvisualizer as dv
 
 CURR_DIR = os.path.dirname(__file__)
 
-NUM_SAMPLES = 2048
+NUM_SAMPLES = 2 ** 18
 NUM_TEST_SAMPLES = 64
 IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
@@ -52,18 +52,7 @@ if __name__ == "__main__":
         for i in range(batch_counts)
     ]  # FIXME: dataloader 자체에 적용
 
-    fig, ax = plt.subplots()
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    (line,) = ax.plot([], [], color="blue")  # 초기 라인 객체 생성
-
-    num_epochs = 2000
-    losses = []
-
-    def init():
-        ax.set_xlim(0, num_epochs)
-        ax.set_ylim(0, 5)  # 손실의 예상 범위를 설정
-        return (line,)
+    num_epochs = 10000
 
     def update(epoch):
         running_loss = 0.0
@@ -81,25 +70,12 @@ if __name__ == "__main__":
             running_loss += loss.item()
 
         epoch_loss = running_loss / 100
-        losses.append(epoch_loss)
-        line.set_data(range(len(losses)), losses)
 
         if (epoch + 1) % 100 == 0:
             print("[%d] loss: %.3f" % (epoch + 1, epoch_loss))
 
-        return (line,)
-
-    ani = animation.FuncAnimation(
-        fig,
-        update,
-        frames=num_epochs,
-        init_func=init,
-        blit=True,
-        interval=50,
-        repeat=False,
-    )
-
-    plt.show()
+    for i in range(num_epochs):
+        update(epoch=i)
 
     print("Finished Training")
 

@@ -1,3 +1,4 @@
+import math
 import os
 import json
 import cv2
@@ -78,6 +79,10 @@ class PolygonDataset(Dataset):
         vertices = np.array(vertices)
         min_coords = vertices.min(axis=0)
         max_coords = vertices.max(axis=0)
+
+        if math.is_close(max_coords - min_coords, 0, abs_tol=1e-8):
+            raise Exception("정상적인 나눔이 아닙니다.")
+
         normalized_vertices = (vertices - min_coords) / (max_coords - min_coords)
 
         # 이미지 크기에 맞게 좌표 조정 (img_size 기준)
@@ -141,22 +146,25 @@ class PolygonDataset(Dataset):
         labels = []
         checking_index = 0
         while len(parcel_img_tensor_dataset) < needed_num_samples:
-            parcel_vertices = self.parcels_data_json["features"][checking_index]["geometry"]["coordinates"][0]
-            pnu = self.parcels_data_json["features"][checking_index]["properties"]["A1"]
+            try:
+                parcel_vertices = self.parcels_data_json["features"][checking_index]["geometry"]["coordinates"][0]
+                pnu = self.parcels_data_json["features"][checking_index]["properties"]["A1"]
 
-            matching_buildings = self.buildings_data_index.get(pnu, [])
+                matching_buildings = self.buildings_data_index.get(pnu, [])
 
-            if len(matching_buildings) > 0:
-                matching_building = matching_buildings[0]
-                building_vertices = matching_building["geometry"]["coordinates"][0]
+                if len(matching_buildings) > 0:
+                    matching_building = matching_buildings[0]
+                    building_vertices = matching_building["geometry"]["coordinates"][0]
 
-                building_img_tensor = self.make_each_img_tensor(building_vertices)
-                parcel_img_tensor = self.make_each_img_tensor(parcel_vertices)
-                vec = self.get_label_vector(building_vertices)
+                    building_img_tensor = self.make_each_img_tensor(building_vertices)
+                    parcel_img_tensor = self.make_each_img_tensor(parcel_vertices)
+                    vec = self.get_label_vector(building_vertices)
 
-                parcel_img_tensor_dataset.append(parcel_img_tensor)
-                building_img_tensor_dataset.append(building_img_tensor)
-                labels.append(vec)
+                    parcel_img_tensor_dataset.append(parcel_img_tensor)
+                    building_img_tensor_dataset.append(building_img_tensor)
+                    labels.append(vec)
+            except:
+                pass
 
             checking_index += 1
 

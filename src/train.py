@@ -74,12 +74,13 @@ if __name__ == "__main__":
         if (epoch + 1) % 100 == 0:
             print("[%d] loss: %.3f" % (epoch + 1, epoch_loss))
 
+            # Save the model
+            model_file_name = f"trained_model_{epoch + 1}.pth"
+            model_save_path = os.path.join(CURR_DIR, "..", f"models/{model_file_name}")
+            torch.save(model.state_dict(), model_save_path)
+            print(f"Model saved to {model_save_path}")
+
     for i in range(num_epochs):
         update(epoch=i)
 
     print("Finished Training")
-
-    # Save the model
-    model_save_path = os.path.join(CURR_DIR, "..", "models/trained_model.pth")
-    torch.save(model.state_dict(), model_save_path)
-    print(f"Model saved to {model_save_path}")

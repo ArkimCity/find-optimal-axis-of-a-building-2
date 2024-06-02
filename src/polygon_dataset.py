@@ -163,7 +163,8 @@ class PolygonDataset(Dataset):
                     building_img_tensor_dataset.append(building_img_tensor)
                     labels.append(vec)
                 else:
-                    print("no matching buildins. pnu: ", pnu)
+                    # print("no matching buildins. pnu: ", pnu)
+                    pass
             except Exception:
                 print("error occured during processing, pnu: ", pnu)
 

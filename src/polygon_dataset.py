@@ -3,7 +3,7 @@ import os
 import json
 import cv2
 import numpy as np
-import requests
+import traceback
 
 import shapely.affinity
 from shapely.geometry import Polygon
@@ -80,11 +80,10 @@ class PolygonDataset(Dataset):
         min_coords = vertices.min(axis=0)
         max_coords = vertices.max(axis=0)
 
-        if math.is_close(max_coords - min_coords, 0, abs_tol=1e-8):
+        if any(np.isclose(max_coords - min_coords, 0, atol=1e-8)):
             raise Exception("정상적인 나눔이 아닙니다.")
 
         normalized_vertices = (vertices - min_coords) / (max_coords - min_coords)
-
         # 이미지 크기에 맞게 좌표 조정 (img_size 기준)
         scaled_vertices = normalized_vertices * (self.img_size - 1)
 
@@ -145,9 +144,9 @@ class PolygonDataset(Dataset):
         building_img_tensor_dataset = []
         labels = []
         checking_index = 0
-        while len(parcel_img_tensor_dataset) < needed_num_samples:
+        for checking_index, parcel_data in enumerate(self.parcels_data_json["features"]):
             try:
-                parcel_vertices = self.parcels_data_json["features"][checking_index]["geometry"]["coordinates"][0]
+                parcel_vertices = parcel_data["geometry"]["coordinates"][0]
                 pnu = self.parcels_data_json["features"][checking_index]["properties"]["A1"]
 
                 matching_buildings = self.buildings_data_index.get(pnu, [])
@@ -163,18 +162,19 @@ class PolygonDataset(Dataset):
                     parcel_img_tensor_dataset.append(parcel_img_tensor)
                     building_img_tensor_dataset.append(building_img_tensor)
                     labels.append(vec)
-            except:
-                pass
+            except Exception:
+                traceback.print_exc()
 
-            checking_index += 1
-
+            if parcel_img_tensor_dataset == needed_num_samples:
+                # 필요한 개수 모이면 stop
+                break
 
         return parcel_img_tensor_dataset, building_img_tensor_dataset, labels
 
 
 if __name__ == "__main__":
     # 데이터 체크
-    dataset_test = PolygonDataset(2048, 128, 32, is_test=True)
+    dataset_test = PolygonDataset(2 ** 16, 128, 32)
     assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.building_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.vec_dataset)

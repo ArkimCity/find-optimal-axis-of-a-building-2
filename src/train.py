@@ -16,7 +16,7 @@ import debugvisualizer as dv
 
 CURR_DIR = os.path.dirname(__file__)
 
-NUM_SAMPLES = 2 ** 16
+NUM_SAMPLES = 2 ** 15
 NUM_TEST_SAMPLES = 64
 IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 데이터셋 인스턴스 생성
-    pickle_path = os.path.join(CURR_DIR, "..", "data/dataset.pickle")
+    pickle_path = os.path.join(CURR_DIR, "..", f"data/dataset_{NUM_SAMPLES}_{NUM_TEST_SAMPLES}_{IMG_SIZE}.pickle")
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
             dataset = pickle.load(f)

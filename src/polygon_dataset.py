@@ -39,22 +39,22 @@ class PolygonDataset(Dataset):
 
         print("loading parcels data ...")
         with open(PARCELS_DATA_FILE_PATH_FOR_TEST if is_test else PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
-            self.parcels_data_json = json.load(f)
+            parcels_data_json = json.load(f)
         print("loading buildings data ...")
         with open(BUILDINGS_DATA_FILE_PATH_FOR_TEST if is_test else BUILDINGS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
-            self.buildings_data_json = json.load(f)
+            buildings_data_json = json.load(f)
         print("loading data done")
 
         # 필지의 pnu를 기준으로 building 을 조회할 예정이기 때문에 미리 index 생성
         print("making buildings data index ...")
-        self.buildings_data_index = self.make_buildings_data_index()
+        self.buildings_data_index = self.make_buildings_data_index(buildings_data_json)
 
         print("making train dataset ...")
         (
             all_parcel_img_tensor_dataset,
             all_building_img_tensor_dataset,
             all_vec_dataset,
-        ) = self.make_datasets(self.num_samples + self.num_test_samples)
+        ) = self.make_datasets(self.num_samples + self.num_test_samples, parcels_data_json)
 
         # 학습에 사용할 데이터
         self.parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[:self.num_samples]
@@ -130,24 +130,24 @@ class PolygonDataset(Dataset):
 
         return vec
 
-    def make_buildings_data_index(self):
+    def make_buildings_data_index(self, buildings_data_json):
         buildings_index = {}
-        for building in self.buildings_data_json["features"]:
+        for building in buildings_data_json["features"]:
             a2 = building["properties"]["A2"]
             if a2 not in buildings_index:
                 buildings_index[a2] = []
             buildings_index[a2].append(building)
         return buildings_index
 
-    def make_datasets(self, needed_num_samples):
+    def make_datasets(self, needed_num_samples, parcels_data_json):
         parcel_img_tensor_dataset = []
         building_img_tensor_dataset = []
         labels = []
         checking_index = 0
-        for checking_index, parcel_data in enumerate(self.parcels_data_json["features"]):
+        for checking_index, parcel_data in enumerate(parcels_data_json["features"]):
             try:
                 parcel_vertices = parcel_data["geometry"]["coordinates"][0]
-                pnu = self.parcels_data_json["features"][checking_index]["properties"]["A1"]
+                pnu = parcels_data_json["features"][checking_index]["properties"]["A1"]
 
                 matching_buildings = self.buildings_data_index.get(pnu, [])
 

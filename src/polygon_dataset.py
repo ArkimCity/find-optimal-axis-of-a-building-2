@@ -165,7 +165,7 @@ class PolygonDataset(Dataset):
             except Exception:
                 traceback.print_exc()
 
-            if parcel_img_tensor_dataset == needed_num_samples:
+            if len(parcel_img_tensor_dataset) == needed_num_samples:
                 # 필요한 개수 모이면 stop
                 break
 

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 데이터셋 인스턴스 생성
-    pickle_path = os.path.join(CURR_DIR, "..", "dataset.pickle")
+    pickle_path = os.path.join(CURR_DIR, "..", "data/dataset.pickle")
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
             dataset = pickle.load(f)

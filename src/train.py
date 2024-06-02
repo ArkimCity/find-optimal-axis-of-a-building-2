@@ -52,6 +52,7 @@ if __name__ == "__main__":
         for i in range(batch_counts)
     ]  # FIXME: dataloader 자체에 적용
 
+    print("train start")
     num_epochs = 10000
 
     def update(epoch):

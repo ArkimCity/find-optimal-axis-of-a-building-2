@@ -162,8 +162,10 @@ class PolygonDataset(Dataset):
                     parcel_img_tensor_dataset.append(parcel_img_tensor)
                     building_img_tensor_dataset.append(building_img_tensor)
                     labels.append(vec)
+                else:
+                    print("no matching buildins. pnu: ", pnu)
             except Exception:
-                traceback.print_exc()
+                print("error occured during processing, pnu: ", pnu)
 
             if len(parcel_img_tensor_dataset) == needed_num_samples:
                 # 필요한 개수 모이면 stop

@@ -163,3 +163,4 @@ cython_debug/
 data/AL_11_D002_20230506.json
 data/AL_11_D010_20230506.json
 data/*.pickle
+.DS_Store

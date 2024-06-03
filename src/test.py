@@ -7,16 +7,16 @@ from model import EncodeTensor
 from polygon_dataset import PolygonDataset
 from debug import visualize_polygon_dataset
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models/trained_model_6000.pth")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models/trained_model.pth")
 
-NUM_SAMPLES = 0
+NUM_SAMPLES = 2048
 NUM_TEST_SAMPLES = 64
 IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
 
 if __name__ == "__main__":
     # 테스트
-    dataset = PolygonDataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE, is_test=True)
+    dataset = PolygonDataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE)
 
     model = CNN()
     model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))

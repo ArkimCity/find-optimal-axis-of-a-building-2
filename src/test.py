@@ -19,7 +19,7 @@ if __name__ == "__main__":
     dataset = PolygonDataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE, is_test=True)
 
     model = CNN()
-    model.load_state_dict(torch.load(MODEL_PATH))
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
 
     result_vecs = []
     for test_data in dataset.test_parcel_img_tensor_dataset:

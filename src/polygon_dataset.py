@@ -1,9 +1,7 @@
-import math
 import os
 import json
 import cv2
 import numpy as np
-import traceback
 
 import shapely.affinity
 from shapely.geometry import Polygon

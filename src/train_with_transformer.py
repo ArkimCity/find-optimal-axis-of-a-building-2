@@ -54,6 +54,7 @@ if __name__ == "__main__":
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    print("train start")
     NUM_EPOCHS = 2000
     for epoch in range(NUM_EPOCHS):
         total_loss = 0.0
@@ -72,6 +73,6 @@ if __name__ == "__main__":
                 f"Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}"
             )
             model_file_name = f"trained_model_{epoch + 1}.pth"
-            model_save_path = os.path.join(CURR_DIR, "..", f"models/{model_file_name}")
+            model_save_path = os.path.join(CURR_DIR, "..", f"models/transformer/{model_file_name}")
             torch.save(model.state_dict(), model_save_path)
             print(f"Model saved to {model_save_path}")

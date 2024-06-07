@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from model import CNN
-from polygon_dataset import PolygonDatasetForCNN, load_dataset
+from polygon_dataset import load_dataset
 
 import torch
 import torch.nn as nn
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
             # Save the model
             model_file_name = f"trained_model_{epoch + 1}.pth"
-            model_save_path = os.path.join(CURR_DIR, "..", f"models/{model_file_name}")
+            model_save_path = os.path.join(CURR_DIR, "..", f"models/cnn/{model_file_name}")
             torch.save(model.state_dict(), model_save_path)
             print(f"Model saved to {model_save_path}")
 

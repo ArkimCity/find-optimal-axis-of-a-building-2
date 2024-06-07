@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from model import CNN
-from polygon_dataset import PolygonDatasetForCNN
+from polygon_dataset import PolygonDatasetForCNN, load_dataset
 
 import torch
 import torch.nn as nn
@@ -38,18 +38,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # 데이터셋 인스턴스 생성
-    pickle_path = os.path.join(CURR_DIR, "..", f"data/dataset_{NUM_SAMPLES}_{NUM_TEST_SAMPLES}_{IMG_SIZE}.pickle")
-    if os.path.exists(pickle_path):
-        with open(pickle_path, "rb") as f:
-            dataset = pickle.load(f)
-        print("dataset loaded from pickle.")
-    else:
-        dataset = PolygonDatasetForCNN(
-            num_samples=NUM_SAMPLES, num_test_samples=NUM_TEST_SAMPLES, img_size=IMG_SIZE
-        )
-        with open(pickle_path, "wb") as f:
-            pickle.dump(dataset, f)
-        print("dataset created and pickled.")
+    dataset = load_dataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE, "cnn")
 
     # 데이터 및 라벨 불러오기
     batch_size = NUM_SAMPLES

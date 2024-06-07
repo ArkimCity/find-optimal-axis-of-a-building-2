@@ -1,6 +1,7 @@
 import os
 import json
 import cv2
+import pickle
 import numpy as np
 
 import shapely.affinity
@@ -30,6 +31,28 @@ class EachData:
         self.building_img_tensor = building_img_tensor
         self.vec = vec
 
+
+def load_dataset(num_samples, num_test_samples, img_size, mode):
+    pickle_path = os.path.join(CURR_DIR, "..", f"data/dataset_{num_samples}_{num_test_samples}_{img_size}_{mode}.pickle")
+
+    if os.path.exists(pickle_path):
+        with open(pickle_path, "rb") as f:
+            dataset = pickle.load(f)
+        print("dataset loaded from pickle.")
+    else:
+        if mode == "cnn":
+            dataset = PolygonDatasetForCNN(
+                num_samples=num_samples, num_test_samples=num_test_samples, img_size=img_size
+            )
+        elif mode == "series":
+            dataset = PolygonDatasetForSeries(
+                num_samples=num_samples, num_test_samples=num_test_samples, img_size=img_size
+            )
+        with open(pickle_path, "wb") as f:
+            pickle.dump(dataset, f)
+        print("dataset created and pickled.")
+
+    return dataset
 
 class PolygonDatasetBase(Dataset):
     def __init__(self, num_samples, num_test_samples, img_size, dataset_for, is_test=False):
@@ -198,7 +221,7 @@ class PolygonDatasetForCNN(PolygonDatasetBase):
 
         return img_tensor
 
-class PolygonDatasetForSeriesData(PolygonDatasetBase):
+class PolygonDatasetForSeries(PolygonDatasetBase):
     def __init__(self, num_samples, num_test_samples, img_size, dataset_for="series", is_test=False):
         super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
@@ -209,7 +232,7 @@ class PolygonDatasetForSeriesData(PolygonDatasetBase):
         # input 점들을 img_size 크기에 맞게 변환 준비
         vertices_normalized = self.normalize_coordinates(vertices_raw)
         polygon_normalized = Polygon(vertices_normalized)
-        vertices_translated = np.array(polygon_normalized.exterior.coords)
+        vertices_translated = torch.tensor(polygon_normalized.exterior.coords)
 
         vertices_data = self.make_each_vertices_data(vertices_translated)
 
@@ -217,7 +240,7 @@ class PolygonDatasetForSeriesData(PolygonDatasetBase):
 
 if __name__ == "__main__":
     # 데이터 체크
-    dataset_test = PolygonDatasetForSeriesData(0, 128, 32, True)
+    dataset_test = PolygonDatasetForSeries(0, 128, 32, True)
 
     # 데이터 체크
     dataset_test = PolygonDatasetForCNN(2 ** 16, 128, 32)

@@ -29,7 +29,7 @@ class EachData:
         self.vec = vec
 
 
-class PolygonDatasetForCNN(Dataset):
+class PolygonDatasetBase(Dataset):
     def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
         self.num_samples = num_samples
         self.num_test_samples = num_test_samples
@@ -87,7 +87,7 @@ class PolygonDatasetForCNN(Dataset):
 
         return scaled_vertices
 
-    def make_each_img_tensor(self, vertices_raw):
+    def make_each_data(self, vertices_raw):
         # input 점들을 img_size 크기에 맞게 변환 준비
         vertices_normalized = self.normalize_coordinates(vertices_raw)
         polygon_normalized = Polygon(vertices_normalized)
@@ -98,16 +98,7 @@ class PolygonDatasetForCNN(Dataset):
         )
         vertices_translated = np.array(polygon_translated.exterior.coords)
 
-        img = np.zeros((self.img_size, self.img_size))
-        for i in range(len(vertices_translated) - 1):
-            pt1 = tuple((vertices_translated[i]).astype(int))
-            pt2 = tuple((vertices_translated[i + 1]).astype(int))
-            cv2.line(img, pt1, pt2, color=1, thickness=1)
-
-        # PyTorch Tensor로 변환
-        img_tensor = torch.tensor(img, dtype=torch.float32)
-        img_tensor = img_tensor.unsqueeze(0)  # 채널 차원 추가
-        return img_tensor
+        return vertices_translated
 
     def get_label_vector(self, vertices_raw):
         vertices_normalized = self.normalize_coordinates(vertices_raw)
@@ -153,8 +144,8 @@ class PolygonDatasetForCNN(Dataset):
                     matching_building = matching_buildings[0]
                     building_vertices = matching_building["geometry"]["coordinates"][0]
 
-                    building_img_tensor = self.make_each_img_tensor(building_vertices)
-                    parcel_img_tensor = self.make_each_img_tensor(parcel_vertices)
+                    building_img_tensor = self.make_each_data(building_vertices)
+                    parcel_img_tensor = self.make_each_data(parcel_vertices)
                     vec = self.get_label_vector(building_vertices)
 
                     parcel_img_tensor_dataset.append(parcel_img_tensor)
@@ -172,8 +163,57 @@ class PolygonDatasetForCNN(Dataset):
 
         return parcel_img_tensor_dataset, building_img_tensor_dataset, labels
 
+class PolygonDatasetForCNN(PolygonDatasetBase):
+    def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
+        super().__init__(num_samples, num_test_samples, img_size, is_test)
+
+    def make_each_img_tensor(self, vertices_translated):
+        img = np.zeros((self.img_size, self.img_size))
+        for i in range(len(vertices_translated) - 1):
+            pt1 = tuple((vertices_translated[i]).astype(int))
+            pt2 = tuple((vertices_translated[i + 1]).astype(int))
+            cv2.line(img, pt1, pt2, color=1, thickness=1)
+
+        # PyTorch Tensor로 변환
+        img_tensor = torch.tensor(img, dtype=torch.float32)
+        img_tensor = img_tensor.unsqueeze(0)  # 채널 차원 추가
+
+        return img_tensor
+
+    def make_each_data(self, vertices_raw):
+        # input 점들을 img_size 크기에 맞게 변환 준비
+        vertices_normalized = self.normalize_coordinates(vertices_raw)
+        polygon_normalized = Polygon(vertices_normalized)
+        polygon_translated = shapely.affinity.translate(
+            polygon_normalized,
+            -polygon_normalized.bounds[0] + 0.1,
+            -polygon_normalized.bounds[1] + 0.1,
+        )
+        vertices_translated = np.array(polygon_translated.exterior.coords)
+
+        img_tensor = self.make_each_img_tensor(vertices_translated)
+
+        return img_tensor
+
+class PolygonDatasetForSeriesData(PolygonDatasetBase):
+
+    def make_each_vertices_data(self, vertices_translated):
+        return vertices_translated
+
+    def make_each_data(self, vertices_raw):
+        # input 점들을 img_size 크기에 맞게 변환 준비
+        vertices_normalized = self.normalize_coordinates(vertices_raw)
+        polygon_normalized = Polygon(vertices_normalized)
+        vertices_translated = np.array(polygon_normalized.exterior.coords)
+
+        vertices_data = self.make_each_vertices_data(vertices_translated)
+
+        return vertices_data
 
 if __name__ == "__main__":
+    # 데이터 체크
+    dataset_test = PolygonDatasetForSeriesData(0, 128, 32, True)
+
     # 데이터 체크
     dataset_test = PolygonDatasetForCNN(2 ** 16, 128, 32)
     assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)

@@ -9,6 +9,8 @@ from shapely.geometry import Polygon
 import torch
 from torch.utils.data import Dataset
 
+import debugvisualizer as dv
+
 CURR_DIR = os.path.dirname(__file__)
 
 PARCELS_DATA_FILE_NAME = "AL_11_D002_20230506.json"
@@ -30,10 +32,11 @@ class EachData:
 
 
 class PolygonDatasetBase(Dataset):
-    def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
+    def __init__(self, num_samples, num_test_samples, img_size, dataset_for, is_test=False):
         self.num_samples = num_samples
         self.num_test_samples = num_test_samples
         self.img_size = img_size
+        self.dataset_for = dataset_for
 
         print("loading parcels data ...")
         with open(PARCELS_DATA_FILE_PATH_FOR_TEST if is_test else PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
@@ -164,8 +167,8 @@ class PolygonDatasetBase(Dataset):
         return parcel_img_tensor_dataset, building_img_tensor_dataset, labels
 
 class PolygonDatasetForCNN(PolygonDatasetBase):
-    def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
-        super().__init__(num_samples, num_test_samples, img_size, is_test)
+    def __init__(self, num_samples, num_test_samples, img_size, dataset_for="CNN", is_test=False):
+        super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
     def make_each_img_tensor(self, vertices_translated):
         img = np.zeros((self.img_size, self.img_size))
@@ -196,6 +199,8 @@ class PolygonDatasetForCNN(PolygonDatasetBase):
         return img_tensor
 
 class PolygonDatasetForSeriesData(PolygonDatasetBase):
+    def __init__(self, num_samples, num_test_samples, img_size, dataset_for="series", is_test=False):
+        super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
     def make_each_vertices_data(self, vertices_translated):
         return vertices_translated

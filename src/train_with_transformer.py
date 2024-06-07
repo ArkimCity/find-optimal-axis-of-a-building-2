@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -5,8 +6,9 @@ from torch.utils.data import DataLoader
 
 from model import DirectionPredictionModelWithTransformer
 from polygon_dataset import load_dataset
-from debug import visualize_results
 from torch.nn.utils.rnn import pad_sequence
+
+CURR_DIR = os.path.dirname(__file__)
 
 
 def collate_fn(batch):
@@ -63,12 +65,9 @@ if __name__ == "__main__":
             optimizer.step()
             total_loss += loss.item()
 
-        print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}')
-
-    predictions = []
-    for points in train_dataset.test_parcel_img_tensor_dataset:
-        points = points.to(device)
-        pred_direction = model(points.unsqueeze(0).float()).detach().cpu().numpy()
-        predictions.append(pred_direction)
-
-    visualize_results(train_dataset.test_parcel_img_tensor_dataset, predictions)
+        if (epoch + 1) % 100 == 0:
+            print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}')
+            model_file_name = f"trained_model_{epoch + 1}.pth"
+            model_save_path = os.path.join(CURR_DIR, "..", f"models/{model_file_name}")
+            torch.save(model.state_dict(), model_save_path)
+            print(f"Model saved to {model_save_path}")

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from model import CNN
-from polygon_dataset import PolygonDataset
+from polygon_dataset import PolygonDatasetForCNN
 
 import torch
 import torch.nn as nn
@@ -44,7 +44,7 @@ if __name__ == "__main__":
             dataset = pickle.load(f)
         print("dataset loaded from pickle.")
     else:
-        dataset = PolygonDataset(
+        dataset = PolygonDatasetForCNN(
             num_samples=NUM_SAMPLES, num_test_samples=NUM_TEST_SAMPLES, img_size=IMG_SIZE
         )
         with open(pickle_path, "wb") as f:

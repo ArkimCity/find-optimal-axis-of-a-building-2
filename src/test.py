@@ -5,7 +5,7 @@ import torch
 
 from model import CNN
 from model import EncodeTensor
-from polygon_dataset import PolygonDataset
+from polygon_dataset import PolygonDatasetForCNN
 from debug import visualize_polygon_dataset
 
 CURR_DIR = os.path.dirname(__file__)
@@ -24,7 +24,7 @@ if __name__ == "__main__":
             dataset = pickle.load(f)
         print("dataset loaded from pickle.")
     else:
-        dataset = PolygonDataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE)
+        dataset = PolygonDatasetForCNN(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE)
         with open(pickle_path, "wb") as f:
             pickle.dump(dataset, f)
         print("dataset created and pickled.")

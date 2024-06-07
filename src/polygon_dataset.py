@@ -29,7 +29,7 @@ class EachData:
         self.vec = vec
 
 
-class PolygonDataset(Dataset):
+class PolygonDatasetForCNN(Dataset):
     def __init__(self, num_samples, num_test_samples, img_size, is_test=False):
         self.num_samples = num_samples
         self.num_test_samples = num_test_samples
@@ -175,7 +175,7 @@ class PolygonDataset(Dataset):
 
 if __name__ == "__main__":
     # 데이터 체크
-    dataset_test = PolygonDataset(2 ** 16, 128, 32)
+    dataset_test = PolygonDatasetForCNN(2 ** 16, 128, 32)
     assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.building_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.vec_dataset)

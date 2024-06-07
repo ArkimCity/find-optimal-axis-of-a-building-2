@@ -30,6 +30,7 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
 
     plt.show()
 
+
 def visualize_results(test_cases, predictions):
     num_test_cases = len(test_cases)
     num_cols = 4
@@ -42,13 +43,31 @@ def visualize_results(test_cases, predictions):
         pred_direction = predictions[i]
 
         plt.subplot(num_rows, num_cols, i + 1)
-        plt.plot(points[:, 0], points[:, 1], 'b-')
-        plt.scatter(points[:, 0], points[:, 1], color='r')
+        plt.plot(points[:, 0], points[:, 1], "b-")
+        plt.scatter(points[:, 0], points[:, 1], color="r")
 
         calculated_direction = calculate_main_direction(points)
-        plt.arrow(points[0][0], points[0][1], calculated_direction[0], calculated_direction[1], head_width=0.5, head_length=0.5, fc='r', ec='r')
+        plt.arrow(
+            points[0][0],
+            points[0][1],
+            calculated_direction[0],
+            calculated_direction[1],
+            head_width=0.5,
+            head_length=0.5,
+            fc="r",
+            ec="r",
+        )
 
-        plt.arrow(points[0][0], points[0][1], pred_direction[0], pred_direction[1], head_width=0.5, head_length=0.5, fc='g', ec='g')
+        plt.arrow(
+            points[0][0],
+            points[0][1],
+            pred_direction[0],
+            pred_direction[1],
+            head_width=0.5,
+            head_length=0.5,
+            fc="g",
+            ec="g",
+        )
 
         plt.title(f"Test Case {i+1}")
         plt.xlabel("X")

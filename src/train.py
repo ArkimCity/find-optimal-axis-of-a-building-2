@@ -16,7 +16,7 @@ import debugvisualizer as dv
 
 CURR_DIR = os.path.dirname(__file__)
 
-NUM_SAMPLES = 2 ** 15
+NUM_SAMPLES = 2**15
 NUM_TEST_SAMPLES = 64
 IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 

@@ -36,12 +36,16 @@ class DirectionPredictionModelWithTransformer(nn.Module):
         super(DirectionPredictionModelWithTransformer, self).__init__()
         self.hidden_dim = hidden_dim
         self.embedding = nn.Linear(input_dim, hidden_dim)
-        self.transformer = nn.TransformerEncoder(nn.TransformerEncoderLayer(hidden_dim, nhead=2), num_layers=2)
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(hidden_dim, nhead=2), num_layers=2
+        )
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
         embedded = self.embedding(x)
-        embedded = embedded.permute(1, 0, 2)  # Transformer expects shape: (seq_len, batch_size, input_size)
+        embedded = embedded.permute(
+            1, 0, 2
+        )  # Transformer expects shape: (seq_len, batch_size, input_size)
         out = self.transformer(embedded)
         out = self.fc(out[-1])  # Take the output of the last token
         return out

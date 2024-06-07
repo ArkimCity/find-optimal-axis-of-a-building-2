@@ -25,23 +25,25 @@ def collate_fn(batch):
 
 def get_device():
     if torch.backends.mps.is_available():
-        return torch.device('mps')
+        return torch.device("mps")
     elif torch.cuda.is_available():
-        return torch.device('cuda')
+        return torch.device("cuda")
     else:
-        return torch.device('cpu')
+        return torch.device("cpu")
 
 
 if __name__ == "__main__":
     device = get_device()
     print(f"Using device: {device}")
 
-    NUM_SAMPLES = 2 ** 10
+    NUM_SAMPLES = 2**10
     NUM_TESTS = 64
     batch_size = 32  # batch size 단위로 폴리곤 점 개수를 맞춰서 한번에 학습에 박아넣음 - collate_fn
 
     train_dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, 32, "series")
-    dataloader = DataLoader(train_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
+    dataloader = DataLoader(
+        train_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn
+    )
 
     INPUT_DIM = 2
     HIDDEN_DIM = 16
@@ -66,7 +68,9 @@ if __name__ == "__main__":
             total_loss += loss.item()
 
         if (epoch + 1) % 100 == 0:
-            print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}')
+            print(
+                f"Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}"
+            )
             model_file_name = f"trained_model_{epoch + 1}.pth"
             model_save_path = os.path.join(CURR_DIR, "..", f"models/{model_file_name}")
             torch.save(model.state_dict(), model_save_path)

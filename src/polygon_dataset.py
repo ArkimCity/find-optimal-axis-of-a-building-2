@@ -10,19 +10,25 @@ from shapely.geometry import Polygon
 import torch
 from torch.utils.data import Dataset
 
-import debugvisualizer as dv
+# import debugvisualizer as dv
 
 CURR_DIR = os.path.dirname(__file__)
 
 PARCELS_DATA_FILE_NAME = "AL_11_D002_20230506.json"
 PARCELS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", PARCELS_DATA_FILE_NAME)
 BUILDINGS_DATA_FILE_NAME = "AL_11_D010_20230506.json"
-BUILDINGS_DATA_FILE_PATH = os.path.join(CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME)
+BUILDINGS_DATA_FILE_PATH = os.path.join(
+    CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME
+)
 
 PARCELS_DATA_FILE_NAME_FOR_TEST = "parcels_data_for_test.json"
-PARCELS_DATA_FILE_PATH_FOR_TEST = os.path.join(CURR_DIR, "..", "data", PARCELS_DATA_FILE_NAME_FOR_TEST)
+PARCELS_DATA_FILE_PATH_FOR_TEST = os.path.join(
+    CURR_DIR, "..", "data", PARCELS_DATA_FILE_NAME_FOR_TEST
+)
 BUILDINGS_DATA_FILE_NAME_FOR_TEST = "buildings_data_for_test.json"
-BUILDINGS_DATA_FILE_PATH_FOR_TEST = os.path.join(CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME_FOR_TEST)
+BUILDINGS_DATA_FILE_PATH_FOR_TEST = os.path.join(
+    CURR_DIR, "..", "data", BUILDINGS_DATA_FILE_NAME_FOR_TEST
+)
 
 
 class EachData:
@@ -33,7 +39,11 @@ class EachData:
 
 
 def load_dataset(num_samples, num_test_samples, img_size, mode):
-    pickle_path = os.path.join(CURR_DIR, "..", f"data/dataset_{num_samples}_{num_test_samples}_{img_size}_{mode}.pickle")
+    pickle_path = os.path.join(
+        CURR_DIR,
+        "..",
+        f"data/dataset_{num_samples}_{num_test_samples}_{img_size}_{mode}.pickle",
+    )
 
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
@@ -42,11 +52,15 @@ def load_dataset(num_samples, num_test_samples, img_size, mode):
     else:
         if mode == "cnn":
             dataset = PolygonDatasetForCNN(
-                num_samples=num_samples, num_test_samples=num_test_samples, img_size=img_size
+                num_samples=num_samples,
+                num_test_samples=num_test_samples,
+                img_size=img_size,
             )
         elif mode == "series":
             dataset = PolygonDatasetForSeries(
-                num_samples=num_samples, num_test_samples=num_test_samples, img_size=img_size
+                num_samples=num_samples,
+                num_test_samples=num_test_samples,
+                img_size=img_size,
             )
         with open(pickle_path, "wb") as f:
             pickle.dump(dataset, f)
@@ -54,18 +68,29 @@ def load_dataset(num_samples, num_test_samples, img_size, mode):
 
     return dataset
 
+
 class PolygonDatasetBase(Dataset):
-    def __init__(self, num_samples, num_test_samples, img_size, dataset_for, is_test=False):
+    def __init__(
+        self, num_samples, num_test_samples, img_size, dataset_for, is_test=False
+    ):
         self.num_samples = num_samples
         self.num_test_samples = num_test_samples
         self.img_size = img_size
         self.dataset_for = dataset_for
 
         print("loading parcels data ...")
-        with open(PARCELS_DATA_FILE_PATH_FOR_TEST if is_test else PARCELS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+        with open(
+            PARCELS_DATA_FILE_PATH_FOR_TEST if is_test else PARCELS_DATA_FILE_PATH,
+            "r",
+            encoding="utf-8",
+        ) as f:
             parcels_data_json = json.load(f)
         print("loading buildings data ...")
-        with open(BUILDINGS_DATA_FILE_PATH_FOR_TEST if is_test else BUILDINGS_DATA_FILE_PATH, "r", encoding="utf-8") as f:
+        with open(
+            BUILDINGS_DATA_FILE_PATH_FOR_TEST if is_test else BUILDINGS_DATA_FILE_PATH,
+            "r",
+            encoding="utf-8",
+        ) as f:
             buildings_data_json = json.load(f)
         print("loading data done")
 
@@ -78,16 +103,26 @@ class PolygonDatasetBase(Dataset):
             all_parcel_img_tensor_dataset,
             all_building_img_tensor_dataset,
             all_vec_dataset,
-        ) = self.make_datasets(self.num_samples + self.num_test_samples, parcels_data_json)
+        ) = self.make_datasets(
+            self.num_samples + self.num_test_samples, parcels_data_json
+        )
 
         # 학습에 사용할 데이터
-        self.parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[:self.num_samples]
-        self.building_img_tensor_dataset = all_building_img_tensor_dataset[:self.num_samples]
-        self.vec_dataset = all_vec_dataset[:self.num_samples]
+        self.parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[
+            : self.num_samples
+        ]
+        self.building_img_tensor_dataset = all_building_img_tensor_dataset[
+            : self.num_samples
+        ]
+        self.vec_dataset = all_vec_dataset[: self.num_samples]
         # 평가에 사용할 데이터
-        self.test_parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[self.num_samples:]
-        self.test_building_img_tensor_dataset = all_building_img_tensor_dataset[self.num_samples:]
-        self.test_vec_dataset = all_vec_dataset[self.num_samples:]
+        self.test_parcel_img_tensor_dataset = all_parcel_img_tensor_dataset[
+            self.num_samples :
+        ]
+        self.test_building_img_tensor_dataset = all_building_img_tensor_dataset[
+            self.num_samples :
+        ]
+        self.test_vec_dataset = all_vec_dataset[self.num_samples :]
 
     def __len__(self):
         return len(self.parcel_img_tensor_dataset)
@@ -189,8 +224,11 @@ class PolygonDatasetBase(Dataset):
 
         return parcel_img_tensor_dataset, building_img_tensor_dataset, labels
 
+
 class PolygonDatasetForCNN(PolygonDatasetBase):
-    def __init__(self, num_samples, num_test_samples, img_size, dataset_for="CNN", is_test=False):
+    def __init__(
+        self, num_samples, num_test_samples, img_size, dataset_for="CNN", is_test=False
+    ):
         super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
     def make_each_img_tensor(self, vertices_translated):
@@ -221,8 +259,16 @@ class PolygonDatasetForCNN(PolygonDatasetBase):
 
         return img_tensor
 
+
 class PolygonDatasetForSeries(PolygonDatasetBase):
-    def __init__(self, num_samples, num_test_samples, img_size, dataset_for="series", is_test=False):
+    def __init__(
+        self,
+        num_samples,
+        num_test_samples,
+        img_size,
+        dataset_for="series",
+        is_test=False,
+    ):
         super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
     def __len__(self):
@@ -245,16 +291,21 @@ class PolygonDatasetForSeries(PolygonDatasetBase):
 
         return vertices_data
 
+
 if __name__ == "__main__":
     # 데이터 체크
     dataset_test = PolygonDatasetForSeries(0, 128, 32, True)
 
     # 데이터 체크
-    dataset_test = PolygonDatasetForCNN(2 ** 16, 128, 32)
+    dataset_test = PolygonDatasetForCNN(2**16, 128, 32)
     assert dataset_test.num_samples == len(dataset_test.parcel_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.building_img_tensor_dataset)
     assert dataset_test.num_samples == len(dataset_test.vec_dataset)
 
-    assert dataset_test.num_test_samples == len(dataset_test.test_parcel_img_tensor_dataset)
-    assert dataset_test.num_test_samples == len(dataset_test.test_building_img_tensor_dataset)
+    assert dataset_test.num_test_samples == len(
+        dataset_test.test_parcel_img_tensor_dataset
+    )
+    assert dataset_test.num_test_samples == len(
+        dataset_test.test_building_img_tensor_dataset
+    )
     assert dataset_test.num_test_samples == len(dataset_test.test_vec_dataset)

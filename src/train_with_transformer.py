@@ -6,15 +6,28 @@ from torch.utils.data import DataLoader
 from model import DirectionPredictionModelWithTransformer
 from polygon_dataset import load_dataset
 from debug import visualize_results
+from torch.nn.utils.rnn import pad_sequence
+
+
+def collate_fn(batch):
+    # Separate the data and labels in the batch
+    data = [item[0] for item in batch]
+    labels_in_batch = [torch.tensor(item[1]) for item in batch]
+
+    # Pad the sequences so they are all the same size in the batch
+    data_padded = pad_sequence(data, batch_first=True, padding_value=0)
+    labels_in_batch = torch.stack(labels_in_batch)
+
+    return data_padded, labels_in_batch
 
 
 def get_device():
     if torch.backends.mps.is_available():
-        return torch.device('mps')  # Use MPS if available on macOS with M1/M2 chips
+        return torch.device('mps')
     elif torch.cuda.is_available():
-        return torch.device('cuda')  # Use CUDA if NVIDIA GPU is available
+        return torch.device('cuda')
     else:
-        return torch.device('cpu')  # Fallback to CPU if none of the above
+        return torch.device('cpu')
 
 
 if __name__ == "__main__":
@@ -23,17 +36,10 @@ if __name__ == "__main__":
 
     NUM_SAMPLES = 2 ** 10
     NUM_TESTS = 64
-    batch_size = NUM_SAMPLES
-    batch_counts = 1
+    batch_size = 32  # batch size 단위로 폴리곤 점 개수를 맞춰서 한번에 학습에 박아넣음 - collate_fn
 
     train_dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, 32, "series")
-    dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
-    all_labels = [
-        torch.tensor(
-            [train_dataset.get_vec(i * batch_size + j) for j in range(batch_size)]
-        ).to(device)
-        for i in range(batch_counts)
-    ]  # FIXME: dataloader 자체에 적용
+    dataloader = DataLoader(train_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
 
     INPUT_DIM = 2
     HIDDEN_DIM = 16
@@ -47,23 +53,21 @@ if __name__ == "__main__":
     NUM_EPOCHS = 2000
     for epoch in range(NUM_EPOCHS):
         total_loss = 0.0
-        for i, train_data in enumerate(dataloader, 0):
-            inputs = train_data.to(device)
+        for inputs, labels in dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+
             optimizer.zero_grad()
-
             outputs = model(inputs)
-
-            loss = criterion(outputs, all_labels[i])  # 실제 레이블을 사용하여 손실 계산
-
+            loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            total_loss += loss.item()
 
-        if (epoch + 1) % 1 == 0:
-            print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(train_dataset):.4f}')
+        print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Loss: {total_loss / len(dataloader):.4f}')
 
     predictions = []
     for points in train_dataset.test_parcel_img_tensor_dataset:
-        points = points.to(device)  # Ensure test data is on the same device
+        points = points.to(device)
         pred_direction = model(points.unsqueeze(0).float()).detach().cpu().numpy()
         predictions.append(pred_direction)
 

@@ -225,6 +225,13 @@ class PolygonDatasetForSeries(PolygonDatasetBase):
     def __init__(self, num_samples, num_test_samples, img_size, dataset_for="series", is_test=False):
         super().__init__(num_samples, num_test_samples, img_size, dataset_for, is_test)
 
+    def __len__(self):
+        assert len(self.parcel_img_tensor_dataset) == len(self.vec_dataset)
+        return len(self.parcel_img_tensor_dataset)
+
+    def __getitem__(self, index):
+        return self.parcel_img_tensor_dataset[index], self.vec_dataset[index]
+
     def make_each_vertices_data(self, vertices_translated):
         return vertices_translated
 

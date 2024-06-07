@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
 
+from polygon_dataset import PolygonDatasetForSeries
+
 
 def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64):
     num_rows = num_images // 8  # 8개씩 8줄로 나누기
@@ -31,7 +33,7 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
     plt.show()
 
 
-def visualize_results(test_cases, predictions):
+def visualize_results(test_cases, predictions, dataset: PolygonDatasetForSeries):
     num_test_cases = len(test_cases)
     num_cols = 4
     num_rows = (num_test_cases + num_cols - 1) // num_cols
@@ -46,7 +48,7 @@ def visualize_results(test_cases, predictions):
         plt.plot(points[:, 0], points[:, 1], "b-")
         plt.scatter(points[:, 0], points[:, 1], color="r")
 
-        calculated_direction = calculate_main_direction(points)
+        calculated_direction = dataset.get_label_vector(points)
         plt.arrow(
             points[0][0],
             points[0][1],

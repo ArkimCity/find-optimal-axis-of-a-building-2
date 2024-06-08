@@ -10,6 +10,10 @@ from torch.nn.utils.rnn import pad_sequence
 
 CURR_DIR = os.path.dirname(__file__)
 
+INPUT_DIM = 2
+HIDDEN_DIM = 16
+OUTPUT_DIM = 2
+
 
 def collate_fn(batch):
     # Separate the data and labels in the batch
@@ -46,9 +50,6 @@ if __name__ == "__main__":
         train_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
     )
 
-    INPUT_DIM = 2
-    HIDDEN_DIM = 16
-    OUTPUT_DIM = 2
     model = DirectionPredictionModelWithTransformer(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM)
     model.to(device)
 

@@ -3,14 +3,14 @@ import json
 import pickle
 import torch
 
-from model import CNN, DirectionPredictionModelWithTransformer
+from model import DirectionPredictionModelWithTransformer
 from model import EncodeTensor
-from polygon_dataset import PolygonDatasetForCNN, PolygonDatasetForSeries
+from polygon_dataset import PolygonDatasetForSeries
 from debug import visualize_results
 from train_with_transformer import INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM
 
 CURR_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(CURR_DIR, "..", "models/trained_model_6000.pth")
+MODEL_PATH = os.path.join(CURR_DIR, "..", "models/transformer/trained_model_2000.pth")
 
 NUM_SAMPLES = 2**15
 NUM_TEST_SAMPLES = 64

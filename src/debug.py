@@ -35,7 +35,7 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
 
 def visualize_results(test_cases, predictions, dataset: PolygonDatasetForSeries):
     num_test_cases = len(test_cases)
-    num_cols = 4
+    num_cols = 8
     num_rows = (num_test_cases + num_cols - 1) // num_cols
 
     plt.figure(figsize=(5 * num_cols, 5 * num_rows))
@@ -76,5 +76,5 @@ def visualize_results(test_cases, predictions, dataset: PolygonDatasetForSeries)
         plt.ylabel("Y")
         plt.grid(True)
 
-    plt.tight_layout()
+    plt.axis('equal')
     plt.show()

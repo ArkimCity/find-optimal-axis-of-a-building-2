@@ -8,13 +8,10 @@ from model import EncodeTensor
 from polygon_dataset import PolygonDatasetForSeries
 from debug import visualize_results
 from train_with_transformer import INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM
+from train_with_transformer import NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE
 
 CURR_DIR = os.path.dirname(__file__)
 MODEL_PATH = os.path.join(CURR_DIR, "..", "models/transformer/trained_model_2000.pth")
-
-NUM_SAMPLES = 2**15
-NUM_TEST_SAMPLES = 64
-IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
 
 if __name__ == "__main__":
@@ -22,14 +19,14 @@ if __name__ == "__main__":
     pickle_path = os.path.join(
         CURR_DIR,
         "..",
-        f"data/dataset_{NUM_SAMPLES}_{NUM_TEST_SAMPLES}_{IMG_SIZE}_series.pickle",
+        f"data/dataset_{NUM_SAMPLES}_{NUM_TESTS}_{POLYGON_SCALE}_series.pickle",
     )
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
             dataset = pickle.load(f)
         print("dataset loaded from pickle.")
     else:
-        dataset = PolygonDatasetForSeries(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE, dataset_for="series")
+        dataset = PolygonDatasetForSeries(NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE, dataset_for="series")
         with open(pickle_path, "wb") as f:
             pickle.dump(dataset, f)
         print("dataset created and pickled.")

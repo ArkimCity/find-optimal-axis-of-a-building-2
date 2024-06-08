@@ -10,6 +10,11 @@ from torch.nn.utils.rnn import pad_sequence
 
 CURR_DIR = os.path.dirname(__file__)
 
+# dataset settings
+NUM_SAMPLES = 2**15
+NUM_TESTS = 64
+POLYGON_SCALE = 32
+# model settings
 INPUT_DIM = 2
 HIDDEN_DIM = 16
 OUTPUT_DIM = 2
@@ -40,9 +45,6 @@ if __name__ == "__main__":
     device = get_device()
     print(f"Using device: {device}")
 
-    NUM_SAMPLES = 2**15
-    NUM_TESTS = 64
-    POLYGON_SCALE = 32
     batch_size = 32  # batch size 단위로 폴리곤 점 개수를 맞춰서 한번에 학습에 박아넣음 - collate_fn
 
     train_dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE, "series")

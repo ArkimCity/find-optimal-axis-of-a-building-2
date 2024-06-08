@@ -38,11 +38,12 @@ if __name__ == "__main__":
 
     NUM_SAMPLES = 2**15
     NUM_TESTS = 64
+    POLYGON_SCALE = 32
     batch_size = 32  # batch size 단위로 폴리곤 점 개수를 맞춰서 한번에 학습에 박아넣음 - collate_fn
 
-    train_dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, 32, "series")
+    train_dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE, "series")
     dataloader = DataLoader(
-        train_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn
+        train_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
     )
 
     INPUT_DIM = 2

@@ -5,11 +5,11 @@ import torch
 
 from model import CNN
 from model import EncodeTensor
-from polygon_dataset import PolygonDatasetForCNN
+from polygon_dataset import load_dataset
 from debug import visualize_polygon_dataset
 
 CURR_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(CURR_DIR, "..", "models/trained_model_6000.pth")
+MODEL_PATH = os.path.join(CURR_DIR, "..", "models/cnn/trained_model_6000.pth")
 
 NUM_SAMPLES = 2**15
 NUM_TEST_SAMPLES = 64
@@ -18,20 +18,7 @@ IMG_SIZE = 32  # 32 * 32 픽셀 처럼 표현 해상도 결정
 
 if __name__ == "__main__":
     # 테스트
-    pickle_path = os.path.join(
-        CURR_DIR,
-        "..",
-        f"data/dataset_{NUM_SAMPLES}_{NUM_TEST_SAMPLES}_{IMG_SIZE}.pickle",
-    )
-    if os.path.exists(pickle_path):
-        with open(pickle_path, "rb") as f:
-            dataset = pickle.load(f)
-        print("dataset loaded from pickle.")
-    else:
-        dataset = PolygonDatasetForCNN(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE)
-        with open(pickle_path, "wb") as f:
-            pickle.dump(dataset, f)
-        print("dataset created and pickled.")
+    dataset = load_dataset(NUM_SAMPLES, NUM_TEST_SAMPLES, IMG_SIZE, "cnn")
 
     model = CNN()
     model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))

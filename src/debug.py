@@ -33,7 +33,7 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
     plt.show()
 
 
-def visualize_results(test_cases, predictions, dataset: PolygonDatasetForSeries):
+def visualize_results(test_cases, test_buildings, predictions, dataset: PolygonDatasetForSeries):
     num_test_cases = len(test_cases)
     num_cols = 8
     num_rows = (num_test_cases + num_cols - 1) // num_cols
@@ -43,10 +43,12 @@ def visualize_results(test_cases, predictions, dataset: PolygonDatasetForSeries)
     for i in range(num_test_cases):
         points = test_cases[i]
         pred_direction = predictions[i]
+        building = test_buildings[i]  # Get the building for the current test case
 
         plt.subplot(num_rows, num_cols, i + 1)
         plt.plot(points[:, 0], points[:, 1], "b-")
         plt.scatter(points[:, 0], points[:, 1], color="r")
+        plt.plot(building[:, 0], building[:, 1], "g-")  # Plot the building
 
         calculated_direction = dataset.get_label_vector(points)
         plt.arrow(

@@ -40,12 +40,17 @@ class DirectionPredictionModelWithTransformer(nn.Module):
             nn.TransformerEncoderLayer(hidden_dim, nhead=2), num_layers=2
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
+        self.attention_weights = nn.Linear(hidden_dim, 1)
 
     def forward(self, x):
         embedded = self.embedding(x)
-        embedded = embedded.permute(
-            1, 0, 2
-        )  # Transformer expects shape: (seq_len, batch_size, input_size)
-        out = self.transformer(embedded)
-        out = self.fc(out[-1])  # Take the output of the last token
+        embedded = embedded.permute(1, 0, 2)  # Transformer expects shape: (seq_len, batch_size, input_size)
+        transformer_out = self.transformer(embedded)
+
+        # Learned Global Attention
+        attention_scores = self.attention_weights(transformer_out)
+        attention_scores = torch.softmax(attention_scores, dim=0)
+        context_vector = torch.sum(attention_scores * transformer_out, dim=0)
+
+        out = self.fc(context_vector)
         return out

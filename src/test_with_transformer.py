@@ -53,6 +53,6 @@ if __name__ == "__main__":
     visualize_results(
         dataset.test_parcel_img_tensor_dataset,
         dataset.test_building_img_tensor_dataset,
+        dataset.test_vec_dataset,
         result_vecs,
-        dataset
     )

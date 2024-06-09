@@ -33,7 +33,7 @@ def visualize_polygon_dataset(img_tensors, vecs, comparison_vecs, num_images=64)
     plt.show()
 
 
-def visualize_results(test_cases, test_buildings, predictions, dataset: PolygonDatasetForSeries):
+def visualize_results(test_cases, test_buildings, test_vecs, predictions):
     num_test_cases = len(test_cases)
     num_cols = 8
     num_rows = (num_test_cases + num_cols - 1) // num_cols
@@ -50,16 +50,15 @@ def visualize_results(test_cases, test_buildings, predictions, dataset: PolygonD
         plt.scatter(points[:, 0], points[:, 1], color="r")
         plt.plot(building[:, 0], building[:, 1], "g-")  # Plot the building
 
-        calculated_direction = dataset.get_label_vector(points)
         plt.arrow(
             points[0][0],
             points[0][1],
-            calculated_direction[0],
-            calculated_direction[1],
+            test_vecs[i][0],
+            test_vecs[i][1],
             head_width=0.5,
             head_length=0.5,
-            fc="r",
-            ec="r",
+            fc="g",
+            ec="g",
         )
 
         plt.arrow(
@@ -69,8 +68,8 @@ def visualize_results(test_cases, test_buildings, predictions, dataset: PolygonD
             pred_direction[1],
             head_width=0.5,
             head_length=0.5,
-            fc="g",
-            ec="g",
+            fc="r",
+            ec="r",
         )
 
         plt.title(f"Test Case {i+1}")

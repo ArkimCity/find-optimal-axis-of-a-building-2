@@ -1,11 +1,10 @@
 import os
 import json
-import pickle
 import torch
 
 from model import DirectionPredictionModelWithTransformer
 from model import EncodeTensor
-from polygon_dataset import PolygonDatasetForSeries
+from polygon_dataset import load_dataset
 from debug import visualize_results
 from train_with_transformer import INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM
 from train_with_transformer import NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE
@@ -21,15 +20,7 @@ if __name__ == "__main__":
         "..",
         f"data/dataset_{NUM_SAMPLES}_{NUM_TESTS}_{POLYGON_SCALE}_series.pickle",
     )
-    if os.path.exists(pickle_path):
-        with open(pickle_path, "rb") as f:
-            dataset = pickle.load(f)
-        print("dataset loaded from pickle.")
-    else:
-        dataset = PolygonDatasetForSeries(NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE, dataset_for="series")
-        with open(pickle_path, "wb") as f:
-            pickle.dump(dataset, f)
-        print("dataset created and pickled.")
+    dataset = load_dataset(NUM_SAMPLES, NUM_TESTS, POLYGON_SCALE, "series")
 
     model = DirectionPredictionModelWithTransformer(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))

@@ -278,16 +278,19 @@ class PolygonDatasetForSeries(PolygonDatasetBase):
     def __getitem__(self, index):
         return self.parcel_img_tensor_dataset[index], self.vec_dataset[index]
 
-    def make_each_vertices_data(self, vertices_translated):
+    def make_each_vertices_data(self, vertices_normalized):
+
+        polygon_normalized = Polygon(vertices_normalized)
+        polygon_simplified = polygon_normalized.simplify(tolerance=0.0001)
+        vertices_translated = torch.tensor(polygon_simplified.exterior.coords)
+
         return vertices_translated
 
     def make_each_data(self, vertices_raw):
         # input 점들을 img_size 크기에 맞게 변환 준비
         vertices_normalized = self.normalize_coordinates(vertices_raw)
-        polygon_normalized = Polygon(vertices_normalized)
-        vertices_translated = torch.tensor(polygon_normalized.exterior.coords)
 
-        vertices_data = self.make_each_vertices_data(vertices_translated)
+        vertices_data = self.make_each_vertices_data(vertices_normalized)
 
         return vertices_data
 
